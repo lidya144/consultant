@@ -1,10 +1,10 @@
-from django.contrib.auth import authenticate, get_user_model
 from rest_framework import serializers, status
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.validators import UniqueValidator
 from models_app.models import User
 from utilities.exception_handler import CustomValidation
+from django.contrib.auth import authenticate
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -12,7 +12,17 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = "__all__"
+        fields = (
+            "phone",
+            "email",
+            "name",
+            "region",
+            "town",
+            "language",
+            "is_active",
+            "is_admin",
+            "password",
+        )
         extra_kwargs = {
             "password": {"write_only": True, "min_length": 8},
             "id": {"read_only": True},
@@ -20,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """Create a new user with encrypted password and return it"""
-        user = get_user_model().objects.create_user(**validated_data)
+        user = User.objects.create_user(**validated_data)
         token, created = Token.objects.get_or_create(user=user)
         data = LoggedInUserSerializer(user)
         return {
@@ -49,7 +59,7 @@ class LoginSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = get_user_model()
+        model = User
         fields = ("email", "password")
 
     def validate(self, data):
@@ -77,7 +87,17 @@ class LoggedInUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = "__all__"
+        fields = (
+            "phone",
+            "email",
+            "name",
+            "region",
+            "town",
+            "language",
+            "is_active",
+            "is_admin",
+            "password",
+        )
         extra_kwargs = {
             "password": {"write_only": True, "min_length": 8},
         }

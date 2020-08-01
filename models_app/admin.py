@@ -1,5 +1,7 @@
 from django.contrib import admin
-
+from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.admin import GroupAdmin
+from django.contrib.auth.models import Permission
 from .models import (
     User,
     LanguageModel,
@@ -18,6 +20,10 @@ from .models import (
     QuizeDescribeQuestionModel,
     QuizeMatchQuestionModel,
 )
+
+admin.site.unregister(Group)
+admin.site.register(Group, GroupAdmin)
+
 
 admin.site.register(User)
 admin.site.register(LanguageModel)
