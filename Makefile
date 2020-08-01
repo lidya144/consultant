@@ -20,12 +20,12 @@ up:
 	$(COMPOSE) up
 
 manage:
-	$(COMPOSE) run --rm src python manage.py ${CMD}
+	$(COMPOSE) run --rm app python manage.py ${CMD}
 
 flake8:
-	$(COMPOSE) run --rm src /bin/bash -c "flake8 . --exclude migrations,settings.py --max-line-length 90"
+	$(COMPOSE) run --rm app /bin/bash -c "flake8 . --exclude migrations,settings.py --max-line-length 90"
 
 pytest:
-	$(COMPOSE) run --rm src /bin/bash -c "pytest ."
+	$(COMPOSE) run --rm app /bin/bash -c "pytest ."
 
 .PHONY: help rmpyc build up manage flake8 pytest
