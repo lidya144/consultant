@@ -11,7 +11,6 @@ from quize.serializers import (
 
 
 class UnitSerializers(serializers.ModelSerializer):
-    # choice_unit = QuizeChoiceQuestionModel()
     unit_instruction = MatchingInstructionSerializers(many=True, read_only=True)
     unit_choice = ChoiceQuestionSerializers(many=True, read_only=True)
     unit_blank = BlankQuestionSerializers(many=True, read_only=True)

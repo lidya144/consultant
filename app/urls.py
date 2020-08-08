@@ -5,7 +5,7 @@ from rest_framework_swagger.views import get_swagger_view
 
 schema_view = get_swagger_view(title="E-Learning documentation")
 
-base_url = ""
+base_url = "api/v1"
 
 urlpatterns = [
     path("docs/", schema_view),
