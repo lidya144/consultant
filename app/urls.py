@@ -5,17 +5,18 @@ from rest_framework_swagger.views import get_swagger_view
 
 schema_view = get_swagger_view(title="E-Learning documentation")
 
+base_url = ""
 
 urlpatterns = [
     path("docs/", schema_view),
-    path("admin/", admin.site.urls),
-    path("api/v1/", include("grade.urls")),
-    path("api/v1/", include("subject.urls")),
-    path("api/v1/", include("unit.urls")),
-    path("api/v1/", include("category.urls")),
-    path("api/v1/", include("language.urls")),
-    path("api/v1/", include("user.urls")),
-    path("api/v1/", include("transaction.urls")),
-    path("api/v1/exams/", include("exam.urls")),
-    path("api/v1/quizes/", include("quize.urls")),
+    path(base_url, admin.site.urls),
+    path(base_url, include("grade.urls")),
+    path(base_url, include("subject.urls")),
+    path(base_url, include("unit.urls")),
+    path(base_url, include("category.urls")),
+    path(base_url, include("language.urls")),
+    path(base_url, include("user.urls")),
+    path(base_url, include("transaction.urls")),
+    path(base_url + "exams/", include("exam.urls")),
+    path(base_url + "quizes/", include("quize.urls")),
 ]
