@@ -12,7 +12,6 @@ class UnitList(generics.ListCreateAPIView):
 
 class UnitRUD(generics.RetrieveUpdateDestroyAPIView):
     # permission_classes = (permissions.IsAuthenticated,)
-
     queryset = UnitModel.objects.all()
     serializer_class = UnitSerializers
     lookup_field = "unitId"
