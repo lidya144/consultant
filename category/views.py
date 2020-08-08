@@ -9,7 +9,7 @@ class CategoryList(generics.ListCreateAPIView):
     serializer_class = CategorySerializers
 
     def get_queryset(self):
-        return self.queryset.filter(grade=8)
+        return self.queryset.all()
 
 
 class CategoryRUD(generics.RetrieveUpdateDestroyAPIView):
