@@ -3,8 +3,11 @@ from models_app.models import (
     QuizeChoiceQuestionModel,
     QuizeBlankSpaceQuestionModel,
     QuizeDescribeQuestionModel,
-    QuizeMatchQuestionModel,
+    QuizeMatchingInstructionModel,
+    QuizeMatchingPosibleAnswersModels,
+    QuizeMatchingQuestionModel,
 )
+
 
 # from subject.serializers import SubjectSerializers
 
@@ -27,7 +30,27 @@ class DescribeQuestionSerializers(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class MatchQuestionSerializers(serializers.ModelSerializer):
+class MatchingPosibleAnswersSerializers(serializers.ModelSerializer):
     class Meta:
-        model = QuizeMatchQuestionModel
+        model = QuizeMatchingPosibleAnswersModels
         fields = "__all__"
+
+
+class MatchingQuestionSerializers(serializers.ModelSerializer):
+    # question_answers = MatchingPosibleAnswersSerializers(many=True, read_only=True)
+
+    class Meta:
+        model = QuizeMatchingQuestionModel
+        fields = "__all__"
+
+
+class MatchingInstructionSerializers(serializers.ModelSerializer):
+    quize_instruction_question = MatchingQuestionSerializers(many=True, read_only=True)
+    quize_instruction_posible = MatchingPosibleAnswersSerializers(
+        many=True, read_only=True
+    )
+
+    class Meta:
+        model = QuizeMatchingInstructionModel
+        fields = "__all__"
+

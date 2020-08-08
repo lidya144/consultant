@@ -3,6 +3,9 @@ from quize import views
 
 
 urlpatterns = [
+    path("matching-instructions/", views.MatchingInstructionList.as_view()),
+    path("matching-questions/", views.MatchingQuestionList.as_view()),
+    path("matching-posible-answers/", views.MatchingPosibleAnswerList.as_view()),
     # path of the choice question of an exam of quizes
     path("choices/", views.ChoiceQuestionList.as_view()),
     path("choices/<int:questionId>/", views.ChoiceQuestionRUD.as_view()),
