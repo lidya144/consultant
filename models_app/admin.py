@@ -13,17 +13,16 @@ from .models import (
     ExamChoiceQuestionModel,
     ExamBlankSpaceQuestionModel,
     ExamDescribeQuestionModel,
-    ExamMatchQuestionModel,
     QuizeChoiceQuestionModel,
     QuizeBlankSpaceQuestionModel,
     QuizeDescribeQuestionModel,
     QuizeDescribeQuestionModel,
-    QuizeMatchQuestionModel,
+    MatchingPosibleAnswersModels,
+    MatchingInstructionModel,
 )
 
 admin.site.unregister(Group)
 admin.site.register(Group, GroupAdmin)
-
 
 admin.site.register(User)
 admin.site.register(LanguageModel)
@@ -35,8 +34,12 @@ admin.site.register(UnitModel)
 admin.site.register(ExamChoiceQuestionModel)
 admin.site.register(ExamBlankSpaceQuestionModel)
 admin.site.register(ExamDescribeQuestionModel)
-admin.site.register(ExamMatchQuestionModel)
 admin.site.register(QuizeChoiceQuestionModel)
 admin.site.register(QuizeBlankSpaceQuestionModel)
 admin.site.register(QuizeDescribeQuestionModel)
-admin.site.register(QuizeMatchQuestionModel)
+admin.site.register(MatchingInstructionModel)
+admin.site.register(MatchingPosibleAnswersModels)
+
+admin.site.site_header = "E-learning admin page"
+admin.site.site_title = "E-learning admin area"
+admin.site.index_title = "E-learning administration"

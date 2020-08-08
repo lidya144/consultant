@@ -7,6 +7,7 @@ from django.contrib.auth.models import (
     PermissionsMixin,
     AbstractBaseUser,
 )
+from utilities.image_validation import validate_image
 
 answer = Choices(
     (1, "optionOne"),
@@ -16,6 +17,7 @@ answer = Choices(
     (5, "optionFive"),
     (6, "optionSix"),
 )
+category = Choices("Lesson", "Exam", "Quize", "General knowledy")
 
 
 class UserManager(BaseUserManager):
@@ -81,15 +83,15 @@ class LanguageModel(models.Model):
         ordering = ("-created_at",)
 
 
-# Create your models here.
 class GradeModel(models.Model):
     gradeId = models.AutoField(primary_key=True)
     gradeTitle = models.CharField(
         max_length=100
     )  # this is the title of grade e.g grade 9, grade 10
     language = models.ForeignKey(
-        LanguageModel, related_name="language_subejct", on_delete=models.CASCADE
-    )  # grade have many subject relationship
+        LanguageModel, related_name="language_category", on_delete=models.CASCADE
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -114,24 +116,26 @@ class SubjectModel(models.Model):
         return self.subjectName
 
     class Meta:
+        unique_together = ("grade", "subjectName")
         ordering = ("-created_at",)
 
 
 class CategoryModel(models.Model):
-    categorytId = models.AutoField(primary_key=True)
-    grade = models.ForeignKey(
-        GradeModel, related_name="grade_category", on_delete=models.CASCADE
-    )  # One grade have many Category relationship
+    categoryId = models.AutoField(primary_key=True)
+    # One Category have many Category relationship
     title = models.CharField(
-        max_length=255
+        max_length=255, choices=category
     )  # this is the title of sub-unit tile of a model
+    subject = models.ForeignKey(
+        SubjectModel, related_name="category_subejct", on_delete=models.CASCADE
+    )  # grade have many subject relationship
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
 
     class Meta:
-        ordering = ("-created_at",)
+        unique_together = ("title", "subject")
 
 
 def upload_path(instance, filename):
@@ -142,41 +146,34 @@ def upload_path(instance, filename):
     return "/".join(["post_image", new_filename])
 
 
-# Create your models here.
 class UnitModel(models.Model):
     unitId = models.AutoField(primary_key=True)
     title = models.CharField(
         max_length=255
     )  # this is the title of unit e.g Introduction of computer science
-    subject = models.ForeignKey(
-        SubjectModel, related_name="subject_unit", on_delete=models.CASCADE
+    category = models.ForeignKey(
+        CategoryModel, related_name="category_unit", on_delete=models.CASCADE
     )  # grade have many subject relationship
     name = models.CharField(
         max_length=255
     )  # this is the name of the chapter or unit e.g Chapter 9, Unit 9
-    pdf = models.FileField(upload_to=upload_path)
+    pdf = models.FileField(upload_to=upload_path, validators=[validate_image])
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
 
     class Meta:
+        unique_together = ("name", "category")
         ordering = ("-created_at",)
 
 
 class ExamChoiceQuestionModel(models.Model):
     questionId = models.AutoField(primary_key=True)
     question = models.TextField(max_length=1000)
-    optionOne = models.TextField(max_length=1000)
-    optionTwo = models.TextField(max_length=1000)
-    optionThree = models.TextField(max_length=1000)
-    optionFour = models.TextField(max_length=1000, null=True, blank=True)
-    optionFive = models.TextField(max_length=1000, null=True, blank=True)
-    optionSix = models.TextField(max_length=1000, null=True, blank=True)
-    answer = models.CharField(max_length=100, choices=answer)
     description = models.TextField(max_length=1000)
-    subject = models.ForeignKey(
-        SubjectModel, related_name="choice_subject", on_delete=models.CASCADE
+    category = models.ForeignKey(
+        CategoryModel, related_name="category_choice", on_delete=models.CASCADE
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -187,13 +184,30 @@ class ExamChoiceQuestionModel(models.Model):
         ordering = ("-created_at",)
 
 
+class Options(models.Model):
+    question = models.ForeignKey(
+        ExamChoiceQuestionModel, related_name="exam_option", on_delete=models.CASCADE
+    )
+
+    text = models.CharField(max_length=128, verbose_name="Answer's text here.")
+    is_correct = models.BooleanField(default=False)
+    label = models.CharField(max_length=1)
+
+    def __str__(self):
+        return self.text
+
+    class Meta:
+        unique_together = ("question", "text"), ("question", "label")
+        ordering = ("label",)
+
+
 class ExamBlankSpaceQuestionModel(models.Model):
     questionId = models.AutoField(primary_key=True)
     question = models.TextField(max_length=1000)
     answer = models.CharField(max_length=1000)
     description = models.TextField(max_length=1000)
-    subject = models.ForeignKey(
-        SubjectModel, related_name="blank_subject", on_delete=models.CASCADE
+    category = models.ForeignKey(
+        CategoryModel, related_name="category_blank", on_delete=models.CASCADE
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -204,10 +218,9 @@ class ExamBlankSpaceQuestionModel(models.Model):
 class ExamDescribeQuestionModel(models.Model):
     questionId = models.AutoField(primary_key=True)
     question = models.TextField(max_length=1000)
-    answer = models.CharField(max_length=1000)
-    description = models.TextField(max_length=1000)
-    subject = models.ForeignKey(
-        SubjectModel, related_name="describe_subject", on_delete=models.CASCADE
+    answer = models.TextField(max_length=1000)
+    category = models.ForeignKey(
+        CategoryModel, related_name="category_describe", on_delete=models.CASCADE
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -215,42 +228,149 @@ class ExamDescribeQuestionModel(models.Model):
         return self.question
 
 
-class ExamMatchQuestionModel(models.Model):
+class MatchingInstructionModel(models.Model):
+    instructionId = models.AutoField(primary_key=True)
+
+    instructionText = models.TextField()
+    category = models.ForeignKey(
+        CategoryModel, related_name="category_instruction", on_delete=models.CASCADE
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.instructionText
+
+
+class MatchingPosibleAnswersModels(models.Model):
+    matchingId = models.AutoField(primary_key=True)
+    instruction = models.ForeignKey(
+        MatchingInstructionModel,
+        related_name="instruction_posible",
+        on_delete=models.CASCADE,
+    )
+    label = models.CharField(max_length=1)
+    optionText = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.optionText
+
+    class Meta:
+        unique_together = (
+            ("instruction", "label"),
+            ("instruction", "optionText"),
+        )
+        ordering = ("label",)
+
+
+class MatchingQuestionModel(models.Model):
     questionId = models.AutoField(primary_key=True)
-    question = models.TextField(max_length=1000)
-    answer = models.CharField(max_length=1000)
-    description = models.TextField(max_length=1000)
-    subject = models.ForeignKey(
-        SubjectModel, related_name="match_subject", on_delete=models.CASCADE
+    number = models.IntegerField()
+    instruction = models.ForeignKey(
+        MatchingInstructionModel,
+        related_name="instruction_question",
+        on_delete=models.CASCADE,
+    )
+    questionText = models.TextField()
+    answer = models.CharField(max_length=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.questionText
+
+    class Meta:
+        unique_together = (
+            ("instruction", "answer"),
+            ("instruction", "questionText"),
+            ("instruction", "number"),
+        )
+        ordering = ("number",)
+
+
+# Quize
+class QuizeMatchingInstructionModel(models.Model):
+    """This is matching exam instruction for a quize """
+
+    instructionId = models.AutoField(primary_key=True)
+    instructionText = models.TextField()
+    unit = models.ForeignKey(
+        UnitModel, related_name="unit_instruction", on_delete=models.CASCADE
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.question
+        return self.instructionText
 
 
-# Create your models here.
+class QuizeMatchingPosibleAnswersModels(models.Model):
+    matchingId = models.AutoField(primary_key=True)
+    instruction = models.ForeignKey(
+        MatchingInstructionModel,
+        related_name="quize_instruction_posible",
+        on_delete=models.CASCADE,
+    )
+    label = models.CharField(max_length=1)
+    optionText = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.optionText
+
+    class Meta:
+        unique_together = (
+            ("instruction", "label"),
+            ("instruction", "optionText"),
+        )
+        ordering = ("label",)
+
+
+class QuizeMatchingQuestionModel(models.Model):
+    questionId = models.AutoField(primary_key=True)
+    number = models.IntegerField()
+    instruction = models.ForeignKey(
+        MatchingInstructionModel,
+        related_name="quize_instruction_question",
+        on_delete=models.CASCADE,
+    )
+    questionText = models.TextField()
+    answer = models.CharField(max_length=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.questionText
+
+    class Meta:
+        unique_together = (
+            ("instruction", "answer"),
+            ("instruction", "questionText"),
+            ("instruction", "number"),
+        )
+        ordering = ("number",)
+
+
 class QuizeChoiceQuestionModel(models.Model):
     questionId = models.AutoField(primary_key=True)
     question = models.TextField(max_length=1000)
-    optionOne = models.TextField(max_length=1000)
-    optionTwo = models.TextField(max_length=1000)
-    optionThree = models.TextField(max_length=1000)
-    optionFour = models.TextField(max_length=1000, null=True, blank=True)
-    optionFive = models.TextField(max_length=1000, null=True, blank=True)
-    optionSix = models.TextField(max_length=1000, null=True, blank=True)
     answer = models.CharField(max_length=100, choices=answer)
     description = models.TextField(max_length=1000)
     unit = models.ForeignKey(
-        UnitModel, related_name="choice_unit", on_delete=models.CASCADE
+        UnitModel, related_name="unit_choice", on_delete=models.CASCADE
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.question
 
-    class Meta:
-        ordering = ("-created_at",)
+
+class QuizeOptions(models.Model):
+    question = models.ForeignKey(
+        QuizeChoiceQuestionModel, related_name="quize_option", on_delete=models.CASCADE
+    )
+    text = models.CharField(max_length=128, verbose_name="Answer's text here.")
+    is_correct = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.text
 
 
 class QuizeBlankSpaceQuestionModel(models.Model):
@@ -259,7 +379,7 @@ class QuizeBlankSpaceQuestionModel(models.Model):
     answer = models.CharField(max_length=1000)
     description = models.TextField(max_length=1000)
     unit = models.ForeignKey(
-        UnitModel, related_name="blank_unit", on_delete=models.CASCADE
+        UnitModel, related_name="unit_blank", on_delete=models.CASCADE
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -273,22 +393,7 @@ class QuizeDescribeQuestionModel(models.Model):
     answer = models.CharField(max_length=1000)
     description = models.TextField(max_length=1000)
     unit = models.ForeignKey(
-        UnitModel, related_name="describe_unit", on_delete=models.CASCADE
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.question
-
-
-class QuizeMatchQuestionModel(models.Model):
-    questionId = models.AutoField(primary_key=True)
-    question = models.TextField(max_length=1000)
-    answer = models.CharField(max_length=1000)
-    description = models.TextField(max_length=1000)
-
-    unit = models.ForeignKey(
-        UnitModel, related_name="dmatch_unit", on_delete=models.CASCADE
+        UnitModel, related_name="unit_describe", on_delete=models.CASCADE
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
