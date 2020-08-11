@@ -1,26 +1,23 @@
-from datetime import datetime
-
-from django.contrib.auth.models import (
-    AbstractBaseUser,
-    BaseUserManager,
-    PermissionsMixin,
-    UserManager,
-)
 from django.db import models
 from model_utils import Choices
-
+from datetime import datetime
+from django.contrib.auth.models import (
+    UserManager,
+    BaseUserManager,
+    PermissionsMixin,
+    AbstractBaseUser,
+)
 from utilities.image_validation import validate_image
 
-category = Choices("Lesson", "Exam", "Quize")
-g_category = Choices("Lesson", "Exam")
-
-
-def upload_path(instance, filename):
-    """Storing an image with directory post_image with custom file name"""
-    now = datetime.now()
-    now_string = now.strftime("%d-%m-%Y %H:%M:%S")
-    new_filename = now_string + filename
-    return "/".join(["post_image", new_filename])
+answer = Choices(
+    (1, "optionOne"),
+    (2, "optionTwo"),
+    (3, "optionThree"),
+    (4, "optionFour"),
+    (5, "optionFive"),
+    (6, "optionSix"),
+)
+category = Choices("Lesson", "Exam", "Quize", "General knowledy")
 
 
 class UserManager(BaseUserManager):
@@ -72,145 +69,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.name
 
 
-class GeneralKnowlegdyModel(models.Model):
-    id = models.AutoField(primary_key=True)
-    title = models.CharField(max_length=100, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.title
-
-    class Meta:
-        ordering = ("-created_at",)
-
-
-class G_ChoiceQuestionModel(models.Model):
-    questionId = models.AutoField(primary_key=True)
-    question = models.TextField(max_length=1000)
-    description = models.TextField(max_length=1000)
-    g_knowledgy = models.ForeignKey(
-        GeneralKnowlegdyModel, related_name="g_choice", on_delete=models.CASCADE
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.question
-
-    class Meta:
-        ordering = ("-created_at",)
-
-
-class G_Options(models.Model):
-    question = models.ForeignKey(
-        G_ChoiceQuestionModel, related_name="g_option", on_delete=models.CASCADE
-    )
-    text = models.CharField(max_length=128, verbose_name="Answer's text here.")
-    is_correct = models.BooleanField(default=False)
-    label = models.CharField(max_length=1)
-
-    def __str__(self):
-        return self.text
-
-    class Meta:
-        unique_together = ("question", "text"), ("question", "label")
-        ordering = ("label",)
-
-
-class G_UnitModel(models.Model):
-    unitId = models.AutoField(primary_key=True)
-    title = models.CharField(
-        max_length=255
-    )  # this is the title of unit e.g Introduction of computer science
-    g_knowledy = models.ForeignKey(
-        GeneralKnowlegdyModel, related_name="g_unit", on_delete=models.CASCADE
-    )  # grade have many subject relationship
-    name = models.CharField(
-        max_length=255
-    )  # this is the name of the chapter or unit e.g Chapter 9, Unit 9
-    pdf = models.FileField(upload_to=upload_path, validators=[validate_image])
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.title
-
-    class Meta:
-        unique_together = ("name", "g_knowledy")
-        ordering = ("-created_at",)
-
-
-class LearnLanguageModel(models.Model):
-    id = models.AutoField(primary_key=True)
-    title = models.CharField(max_length=100, unique=True)
-    is_local = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.title
-
-    class Meta:
-        ordering = ("-created_at",)
-
-
-class L_ChoiceQuestionModel(models.Model):
-    questionId = models.AutoField(primary_key=True)
-    question = models.TextField(max_length=1000)
-    description = models.TextField(max_length=1000)
-    g_knowledgy = models.ForeignKey(
-        LearnLanguageModel, related_name="l_choice", on_delete=models.CASCADE
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.question
-
-    class Meta:
-        ordering = ("-created_at",)
-
-
-class L_Options(models.Model):
-    question = models.ForeignKey(
-        L_ChoiceQuestionModel, related_name="l_option", on_delete=models.CASCADE
-    )
-    text = models.CharField(max_length=128, verbose_name="Answer's text here.")
-    is_correct = models.BooleanField(default=False)
-    label = models.CharField(max_length=1)
-
-    def __str__(self):
-        return self.text
-
-    class Meta:
-        unique_together = ("question", "text"), ("question", "label")
-        ordering = ("label",)
-
-
-class L_UnitModel(models.Model):
-    unitId = models.AutoField(primary_key=True)
-    title = models.CharField(
-        max_length=255
-    )  # this is the title of unit e.g Introduction of computer science
-    g_knowledy = models.ForeignKey(
-        LearnLanguageModel, related_name="l_unit", on_delete=models.CASCADE
-    )  # grade have many subject relationship
-    name = models.CharField(
-        max_length=255
-    )  # this is the name of the chapter or unit e.g Chapter 9, Unit 9
-    pdf = models.FileField(upload_to=upload_path, validators=[validate_image])
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.title
-
-    class Meta:
-        unique_together = ("name", "g_knowledy")
-        ordering = ("-created_at",)
-
-
 class LanguageModel(models.Model):
-    """This is the language  that user choose to learn all subject based on their option"""
-
     languageId = models.AutoField(primary_key=True)
-    languageName = models.CharField(max_length=100, unique=True)
-
+    languageName = models.CharField(
+        max_length=100, unique=True
+    )  # this is the title of grade e.g grade 9, grade 10
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -226,8 +89,9 @@ class GradeModel(models.Model):
         max_length=100
     )  # this is the title of grade e.g grade 9, grade 10
     language = models.ForeignKey(
-        LanguageModel, related_name="language_grade", on_delete=models.CASCADE
+        LanguageModel, related_name="language_category", on_delete=models.CASCADE
     )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -274,13 +138,21 @@ class CategoryModel(models.Model):
         unique_together = ("title", "subject")
 
 
+def upload_path(instance, filename):
+    """Storing an image with directory post_image with custom file name"""
+    now = datetime.now()
+    now_string = now.strftime("%d-%m-%Y %H:%M:%S")
+    new_filename = now_string + filename
+    return "/".join(["post_image", new_filename])
+
+
 class UnitModel(models.Model):
     unitId = models.AutoField(primary_key=True)
     title = models.CharField(
         max_length=255
     )  # this is the title of unit e.g Introduction of computer science
-    subject = models.ForeignKey(
-        SubjectModel, related_name="subject_unit", on_delete=models.CASCADE
+    category = models.ForeignKey(
+        CategoryModel, related_name="category_unit", on_delete=models.CASCADE
     )  # grade have many subject relationship
     name = models.CharField(
         max_length=255
@@ -292,7 +164,7 @@ class UnitModel(models.Model):
         return self.title
 
     class Meta:
-        unique_together = ("name", "subject")
+        unique_together = ("name", "category")
         ordering = ("-created_at",)
 
 
@@ -300,8 +172,8 @@ class ExamChoiceQuestionModel(models.Model):
     questionId = models.AutoField(primary_key=True)
     question = models.TextField(max_length=1000)
     description = models.TextField(max_length=1000)
-    subject = models.ForeignKey(
-        SubjectModel, related_name="subject_choice", on_delete=models.CASCADE
+    category = models.ForeignKey(
+        CategoryModel, related_name="category_choice", on_delete=models.CASCADE
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -334,8 +206,8 @@ class ExamBlankSpaceQuestionModel(models.Model):
     question = models.TextField(max_length=1000)
     answer = models.CharField(max_length=1000)
     description = models.TextField(max_length=1000)
-    subject = models.ForeignKey(
-        SubjectModel, related_name="subject_blank", on_delete=models.CASCADE
+    category = models.ForeignKey(
+        CategoryModel, related_name="category_blank", on_delete=models.CASCADE
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -347,8 +219,8 @@ class ExamDescribeQuestionModel(models.Model):
     questionId = models.AutoField(primary_key=True)
     question = models.TextField(max_length=1000)
     answer = models.TextField(max_length=1000)
-    subject = models.ForeignKey(
-        SubjectModel, related_name="subject_describe", on_delete=models.CASCADE
+    category = models.ForeignKey(
+        CategoryModel, related_name="category_describe", on_delete=models.CASCADE
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -360,8 +232,8 @@ class MatchingInstructionModel(models.Model):
     instructionId = models.AutoField(primary_key=True)
 
     instructionText = models.TextField()
-    subject = models.ForeignKey(
-        SubjectModel, related_name="subject_instruction", on_delete=models.CASCADE
+    category = models.ForeignKey(
+        CategoryModel, related_name="category_instruction", on_delete=models.CASCADE
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -415,6 +287,7 @@ class MatchingQuestionModel(models.Model):
         ordering = ("number",)
 
 
+# Quize
 class QuizeMatchingInstructionModel(models.Model):
     """This is matching exam instruction for a quize """
 
@@ -478,6 +351,7 @@ class QuizeMatchingQuestionModel(models.Model):
 class QuizeChoiceQuestionModel(models.Model):
     questionId = models.AutoField(primary_key=True)
     question = models.TextField(max_length=1000)
+    answer = models.CharField(max_length=100, choices=answer)
     description = models.TextField(max_length=1000)
     unit = models.ForeignKey(
         UnitModel, related_name="unit_choice", on_delete=models.CASCADE
@@ -537,3 +411,4 @@ class TransactionModel(models.Model):
     )
     amount = models.FloatField()
     created_at = models.DateTimeField(auto_now_add=True)
+
