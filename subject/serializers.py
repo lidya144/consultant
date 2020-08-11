@@ -12,9 +12,6 @@ from exam.serializers import (
 
 
 class SubjectSerializers(serializers.ModelSerializer):
-    subject_unit = UnitSerializers(many=True, read_only=True)
-    category_subejct = CategorySerializers(many=True, read_only=True)
-
     class Meta:
         model = SubjectModel
         fields = "__all__"
