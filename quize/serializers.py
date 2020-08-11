@@ -9,9 +9,6 @@ from models_app.models import (
 )
 
 
-# from subject.serializers import SubjectSerializers
-
-
 class ChoiceQuestionSerializers(serializers.ModelSerializer):
     class Meta:
         model = QuizeChoiceQuestionModel
@@ -37,8 +34,6 @@ class MatchingPosibleAnswersSerializers(serializers.ModelSerializer):
 
 
 class MatchingQuestionSerializers(serializers.ModelSerializer):
-    # question_answers = MatchingPosibleAnswersSerializers(many=True, read_only=True)
-
     class Meta:
         model = QuizeMatchingQuestionModel
         fields = "__all__"
