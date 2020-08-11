@@ -38,13 +38,15 @@ INSTALLED_APPS = [
     "language",
     "grade",
     "subject",
-    "category",
+    # "category",
     "unit",
     "user",
     "transaction",
     "models_app",
     "exam",
     "quize",
+    "general_knowledy",
+    "learn_language",
 ]
 
 MIDDLEWARE = [

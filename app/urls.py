@@ -16,6 +16,8 @@ urlpatterns = [
     path(base_url, include("category.urls")),
     path(base_url, include("language.urls")),
     path(base_url, include("user.urls")),
+    path(base_url, include("general_knowledy.urls")),
+    path(base_url, include("learn_language.urls")),
     path(base_url, include("transaction.urls")),
     path(base_url + "exams/", include("exam.urls")),
     path(base_url + "quizes/", include("quize.urls")),
