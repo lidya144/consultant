@@ -17,8 +17,6 @@ class MatchingPosibleAnswersSerializers(serializers.ModelSerializer):
 
 
 class MatchingQuestionSerializers(serializers.ModelSerializer):
-    # question_answers = MatchingPosibleAnswersSerializers(many=True, read_only=True)
-
     class Meta:
         model = MatchingQuestionModel
         fields = "__all__"
