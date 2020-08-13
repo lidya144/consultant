@@ -2,7 +2,6 @@ from rest_framework import serializers
 from models_app.models import SubjectModel
 from unit.serializers import UnitSerializers
 
-from category.serializers import CategorySerializers
 from exam.serializers import (
     ChoiceQuestionSerializers,
     MatchingInstructionSerializers,
