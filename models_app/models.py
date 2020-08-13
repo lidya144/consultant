@@ -11,8 +11,7 @@ from model_utils import Choices
 
 from utilities.image_validation import validate_image
 
-category = Choices("Lesson", "Exam", "Quize")
-g_category = Choices("Lesson", "Exam")
+languages = Choices("Amharic", "Oromifa", "tigregna")
 
 
 def upload_path(instance, filename):
@@ -49,6 +48,20 @@ class UserManager(BaseUserManager):
         return user
 
 
+class RegionModel(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True)
+    primaryLanguage = models.CharField(max_length=100)
+    status = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ("created_at",)
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     """Custom user model that supports using email instade of the default username"""
 
@@ -56,9 +69,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone = models.CharField(max_length=255)
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
-    region = models.CharField(max_length=100, blank=True, null=True)
-    town = models.CharField(max_length=100, blank=True, null=True)
-    language = models.CharField(max_length=100, blank=True, null=True)
+    phoneNo = models.CharField(max_length=15, blank=True, null=True)
+    region = models.ForeignKey(
+        RegionModel, related_name="region_user", on_delete=models.CASCADE, null=True
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
@@ -70,6 +85,13 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.name
+
+
+class DeviceModel(models.Model):
+    id = models.AutoField(primary_key=True)
+    deviceId = models.CharField(max_length=100)
+    user = models.ForeignKey(User, related_name="user_device", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class GeneralKnowlegdyModel(models.Model):
@@ -205,36 +227,15 @@ class L_UnitModel(models.Model):
         ordering = ("-created_at",)
 
 
-class LanguageModel(models.Model):
-    """This is the language  that user choose to learn all subject based on their option"""
-
-    languageId = models.AutoField(primary_key=True)
-    languageName = models.CharField(max_length=100, unique=True)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.languageName
-
-    class Meta:
-        ordering = ("-created_at",)
-
-
 class GradeModel(models.Model):
     gradeId = models.AutoField(primary_key=True)
-    gradeTitle = models.CharField(
-        max_length=100
-    )  # this is the title of grade e.g grade 9, grade 10
-    language = models.ForeignKey(
-        LanguageModel, related_name="language_grade", on_delete=models.CASCADE
-    )
+    gradeTitle = models.CharField(max_length=100, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.gradeTitle
 
     class Meta:
-        unique_together = ("language", "gradeTitle")
         ordering = ("-created_at",)
 
 
@@ -243,6 +244,7 @@ class SubjectModel(models.Model):
     grade = models.ForeignKey(
         GradeModel, related_name="grade_subejct", on_delete=models.CASCADE
     )  # grade have many subject relationship
+    language = models.CharField(max_length=50, choices=languages)
     subjectName = models.CharField(
         max_length=255
     )  # this is the name of the subject e.g biology, physics
@@ -254,24 +256,6 @@ class SubjectModel(models.Model):
     class Meta:
         unique_together = ("grade", "subjectName")
         ordering = ("-created_at",)
-
-
-class CategoryModel(models.Model):
-    categoryId = models.AutoField(primary_key=True)
-    # One Category have many Category relationship
-    title = models.CharField(
-        max_length=255, choices=category
-    )  # this is the title of sub-unit tile of a model
-    subject = models.ForeignKey(
-        SubjectModel, related_name="category_subejct", on_delete=models.CASCADE
-    )  # grade have many subject relationship
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.title
-
-    class Meta:
-        unique_together = ("title", "subject")
 
 
 class UnitModel(models.Model):
