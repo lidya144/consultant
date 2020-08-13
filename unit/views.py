@@ -1,5 +1,5 @@
 from rest_framework import generics, permissions
-from models_app.models import UnitModel
+from models_app.models import UnitModel, SubjectModel
 from .serializers import UnitSerializers
 
 
@@ -8,6 +8,10 @@ class UnitList(generics.ListCreateAPIView):
 
     queryset = UnitModel.objects.all()
     serializer_class = UnitSerializers
+
+    def get_queryset(self):
+        subject = SubjectModel.objects.get(language="tigregna")
+        return self.queryset.filter(subject=1)
 
 
 class UnitRUD(generics.RetrieveUpdateDestroyAPIView):

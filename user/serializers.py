@@ -5,6 +5,7 @@ from rest_framework.validators import UniqueValidator
 from models_app.models import User
 from utilities.exception_handler import CustomValidation
 from django.contrib.auth import authenticate
+from models_app.models import DeviceModel
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -17,8 +18,6 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "name",
             "region",
-            "town",
-            "language",
             "is_active",
             "is_admin",
             "password",
@@ -32,6 +31,9 @@ class UserSerializer(serializers.ModelSerializer):
         """Create a new user with encrypted password and return it"""
         user = User.objects.create_user(**validated_data)
         token, created = Token.objects.get_or_create(user=user)
+        DeviceModel.objects.create(
+            user=user, deviceId=self.context.get("request").data.get("deviceId")
+        )
         data = LoggedInUserSerializer(user)
         return {
             "user": data.data,
@@ -72,6 +74,18 @@ class LoginSerializer(serializers.ModelSerializer):
             raise CustomValidation(
                 "detail", "Invalid Credentials", status.HTTP_401_UNAUTHORIZED
             )
+        count = DeviceModel.objects.filter(
+            deviceId=self.context.get("request").data.get("deviceId")
+        ).count()
+
+        if count >= 2:
+            raise CustomValidation(
+                "detail", "You reached maximum device limit", status.HTTP_403_FORBIDDEN,
+            )
+        else:
+            DeviceModel.objects.create(
+                user=user, deviceId=self.context.get("request").data.get("deviceId")
+            )
 
         token, created = Token.objects.get_or_create(user=user)
         data = LoggedInUserSerializer(user)
@@ -92,8 +106,6 @@ class LoggedInUserSerializer(serializers.ModelSerializer):
             "email",
             "name",
             "region",
-            "town",
-            "language",
             "is_active",
             "is_admin",
             "password",
