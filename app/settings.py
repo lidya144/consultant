@@ -35,10 +35,9 @@ INSTALLED_APPS = [
     # This solves the cross-origin problem in every browser
     "corsheaders",
     # List of apps of the project
-    "language",
+    # "language",
     "grade",
     "subject",
-    # "category",
     "unit",
     "user",
     "transaction",
