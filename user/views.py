@@ -4,7 +4,7 @@ from .serializers import (
     LoginSerializer,
     UserSerializer,
 )
-from models_app.models import User
+from models_app.models import User, DeviceModel
 
 
 class SignupUserView(generics.ListCreateAPIView):
@@ -14,7 +14,7 @@ class SignupUserView(generics.ListCreateAPIView):
     queryset = User.objects.all()
 
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
+        serializer = UserSerializer(data=request.data, context={"request": request})
         if serializer.is_valid(raise_exception=True):
             user = serializer.save()
             return Response(user)
@@ -44,7 +44,7 @@ class LoginAPIView(generics.CreateAPIView):
     serializer_class = LoginSerializer
 
     def post(self, request):
-        serializer = LoginSerializer(data=request.data)
+        serializer = LoginSerializer(data=request.data, context={"request": request})
         if serializer.is_valid(raise_exception=True):
             return serializer.validated_data
 
