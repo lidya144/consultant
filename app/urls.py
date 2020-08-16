@@ -12,6 +12,7 @@ urlpatterns = [
     path("docs/", schema_view),
     path("admin/", admin.site.urls),
     path(base_url, include("product.urls")),
+    path(base_url, include("user.urls")),
     path(
         "reset_password/", auth_views.PasswordResetView.as_view(), name="password_reset"
     ),

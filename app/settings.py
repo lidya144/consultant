@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     # List of apps of the project
     "models_app",
     "product",
+    "user",
 ]
 
 MIDDLEWARE = [
