@@ -35,17 +35,8 @@ INSTALLED_APPS = [
     # This solves the cross-origin problem in every browser
     "corsheaders",
     # List of apps of the project
-    # "language",
-    "grade",
-    "subject",
-    "unit",
-    "user",
-    "transaction",
     "models_app",
-    "exam",
-    "quize",
-    "general_knowledy",
-    "learn_language",
+    "product",
 ]
 
 MIDDLEWARE = [
@@ -134,10 +125,12 @@ EMAIL_USE_TLS = True
 
 EMAIL_HOST = "smtp.gmail.com"
 
-EMAIL_HOST_USER = "endalkhbel@gmail.com"
+EMAIL_HOST_USER = "this is your email" # you should replace your email address
+# os.environ.get("EMAIL_HOST_USER")
 
 # Must generate specific password for your app in [gmail settings][1]
-EMAIL_HOST_PASSWORD = "44MissYou"
+EMAIL_HOST_PASSWORD = "" # You sould add your password or app key here too
+# os.environ.get("EMAIL_HOST_PASSWORD")
 
 EMAIL_PORT = 587
 
