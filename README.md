@@ -1,4 +1,4 @@
-# ethio-learning-backend
+# Consultant app
 # Instruction with docekr
 1. docker-compose build
 2. docker-compose run app sh -c "python manage.py makemigrations"
